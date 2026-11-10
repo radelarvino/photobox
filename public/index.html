@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#FFF6EC">
+  <meta name="description" content="Photobox Web — photobooth di browser. Ambil foto, pilih border dan filter, unduh hasil siap cetak 300 DPI.">
+  <title>Photobox — photobooth di browser</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="assets/fonts/nunito-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/nunito-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/baloo-2-800-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/fonts.css?v=2">
+  <link rel="stylesheet" href="css/app.css?v=13">
+</head>
+<body>
+  <svg class="sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="i-camera" viewBox="0 0 24 24">
+      <path d="M4 8.5h2.4l1.3-2h8.6l1.3 2H20a1.5 1.5 0 0 1 1.5 1.5v7A1.5 1.5 0 0 1 20 18.5H4A1.5 1.5 0 0 1 2.5 17v-7A1.5 1.5 0 0 1 4 8.5Z"/>
+      <circle cx="12" cy="13.4" r="3.4"/>
+    </symbol>
+    <symbol id="i-arrow-left" viewBox="0 0 24 24">
+      <path d="M14.5 5.5 8 12l6.5 6.5M8 12h12"/>
+    </symbol>
+    <symbol id="i-arrow-right" viewBox="0 0 24 24">
+      <path d="M9.5 5.5 16 12l-6.5 6.5M16 12H4"/>
+    </symbol>
+    <symbol id="i-download" viewBox="0 0 24 24">
+      <path d="M12 3.5v11m0 0 4.2-4.2M12 14.5 7.8 10.3M4.5 17v2a1.5 1.5 0 0 0 1.5 1.5h12A1.5 1.5 0 0 0 19.5 19v-2"/>
+    </symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24">
+      <path d="M4.5 7h15M9.5 7V4.8h5V7M6.5 7l.8 12.2A1.5 1.5 0 0 0 8.8 20.5h6.4a1.5 1.5 0 0 0 1.5-1.3L17.5 7M10 11v5.5M14 11v5.5"/>
+    </symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24">
+      <path d="M12 20V9m0 0 4.2 4.2M12 9 7.8 13.2M4.5 6V4.5A1.5 1.5 0 0 1 6 3h12a1.5 1.5 0 0 1 1.5 1.5V6"/>
+    </symbol>
+    <symbol id="i-sound" viewBox="0 0 24 24">
+      <path d="M4 9.5h3.2L12 5.5v13L7.2 14.5H4zM16 9a4.2 4.2 0 0 1 0 6M18.8 6.4a8 8 0 0 1 0 11.2"/>
+    </symbol>
+    <symbol id="i-mute" viewBox="0 0 24 24">
+      <path d="M4 9.5h3.2L12 5.5v13L7.2 14.5H4zM16.5 9.5l5 5m0-5-5 5"/>
+    </symbol>
+    <symbol id="i-sparkle" viewBox="0 0 24 24">
+      <path d="M12 3.5c.6 4.3 2.7 6.4 7 7-4.3.6-6.4 2.7-7 7-.6-4.3-2.7-6.4-7-7 4.3-.6 6.4-2.7 7-7Z"/>
+    </symbol>
+    <symbol id="i-check" viewBox="0 0 24 24">
+      <path d="m5 12.5 4.5 4.5L19 6.5"/>
+    </symbol>
+    <symbol id="i-x" viewBox="0 0 24 24">
+      <path d="M6 6l12 12M18 6 6 18"/>
+    </symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24">
+      <path d="M19.5 12a7.5 7.5 0 1 1-2.3-5.4M20 4v4.5h-4.5"/>
+    </symbol>
+    <symbol id="i-image" viewBox="0 0 24 24">
+      <rect x="3" y="4.5" width="18" height="15" rx="2.5"/>
+      <circle cx="8.5" cy="10" r="1.6"/>
+      <path d="m4 17 5-4.5 4 3.2 3-2.4 4 3.7"/>
+    </symbol>
+    <symbol id="i-grid" viewBox="0 0 24 24">
+      <rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/>
+      <rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/>
+      <rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/>
+      <rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/>
+    </symbol>
+    <symbol id="i-switch" viewBox="0 0 24 24">
+      <path d="M4 8.5h13.5M14 5l3.5 3.5L14 12M20 15.5H6.5M10 12l-3.5 3.5L10 19"/>
+    </symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24">
+      <rect x="4.5" y="10" width="15" height="10.5" rx="2.5"/>
+      <path d="M8 10V7.5a4 4 0 0 1 8 0V10M12 14v2.5"/>
+    </symbol>
+  </svg>
+
+  <div class="app">
+    <header class="topbar">
+      <button class="brand" data-nav="home" aria-label="Photobox, kembali ke beranda">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 48 48"><path d="M10 16.5h4l2.6-4h14.8l2.6 4h4A3.5 3.5 0 0 1 41.5 20v14A3.5 3.5 0 0 1 38 37.5H10A3.5 3.5 0 0 1 6.5 34V20A3.5 3.5 0 0 1 10 16.5Z" fill="#FF7A9C" stroke="#35283A" stroke-width="3" stroke-linejoin="round"/><circle cx="24" cy="26.5" r="7" fill="#FFF6EC" stroke="#35283A" stroke-width="3"/><circle cx="24" cy="26.5" r="3" fill="#FFD166" stroke="#35283A" stroke-width="2"/></svg>
+        </span>
+        <span class="brand-text">Photobox</span>
+      </button>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost btn-sm" data-nav="gallery">
+          <svg class="icon" aria-hidden="true"><use href="#i-grid"/></svg>
+          <span>Galeri</span>
+          <span class="badge" id="gallery-count" hidden>0</span>
+        </button>
+        <button class="icon-btn" id="sound-toggle" aria-pressed="true" aria-label="Matikan suara" title="Suara">
+          <svg class="icon" aria-hidden="true"><use href="#i-sound"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="stage">
+      <!-- ===================== BERANDA ===================== -->
+      <section class="screen screen-home is-active" id="screen-home" data-screen="home">
+        <div class="curtain" id="curtain" aria-hidden="true">
+          <div class="curtain-panel curtain-left"></div>
+          <div class="curtain-panel curtain-right"></div>
+          <div class="curtain-rod"></div>
+        </div>
+
+        <div class="home-inner">
+          <p class="eyebrow"><svg class="icon" aria-hidden="true"><use href="#i-sparkle"/></svg> photobooth dalam browser</p>
+          <h1 class="home-title" aria-label="Photobox">
+            <span style="--rot:-6deg;--c:var(--pink)">P</span><span style="--rot:4deg;--c:var(--sky)">h</span><span style="--rot:-3deg;--c:var(--butter)">o</span><span style="--rot:5deg;--c:var(--mint)">t</span><span style="--rot:-5deg;--c:var(--lilac)">o</span><span style="--rot:3deg;--c:var(--pink)">b</span><span style="--rot:-4deg;--c:var(--sky)">o</span><span style="--rot:6deg;--c:var(--butter)">x</span>
+          </h1>
+          <p class="home-sub">Pose sepuasnya, pilih border lucu, lalu unduh foto siap cetak 300&nbsp;DPI. Tanpa akun, tanpa ribet.</p>
+
+          <div class="mascot-wrap">
+            <svg class="mascot" id="home-mascot" viewBox="0 0 220 210" role="img" aria-label="Kiko, maskot photobox, melambai">
+              <g class="mascot-bob">
+                <ellipse class="mascot-shadow" cx="110" cy="196" rx="52" ry="9"/>
+                <path class="mascot-arm mascot-arm-left" d="M52 118c-8 6-14 14-16 23" />
+                <path class="mascot-arm mascot-arm-right" d="M168 118c8 5 13 12 15 20" />
+                <path class="mascot-body" d="M110 22c34 0 62 22 62 58 0 22-6 40-18 55-10 12-26 19-44 19s-34-7-44-19c-12-15-18-33-18-55 0-36 28-58 62-58Z"/>
+                <path class="mascot-ear mascot-ear-left" d="M74 34c-6-12-4-22 2-26 8-5 18 2 24 12"/>
+                <path class="mascot-ear mascot-ear-right" d="M146 34c6-12 4-22-2-26-8-5-18 2-24 12"/>
+                <circle class="mascot-cheek" cx="76" cy="116" r="9"/>
+                <circle class="mascot-cheek" cx="144" cy="116" r="9"/>
+                <g class="mascot-eyes">
+                  <ellipse class="mascot-eye" cx="88" cy="96" rx="7.5" ry="9"/>
+                  <ellipse class="mascot-eye" cx="132" cy="96" rx="7.5" ry="9"/>
+                  <circle class="mascot-glint" cx="90.5" cy="92.5" r="2.6"/>
+                  <circle class="mascot-glint" cx="134.5" cy="92.5" r="2.6"/>
+                </g>
+                <path class="mascot-smile" d="M98 116c4 6 8 9 12 9s8-3 12-9"/>
+                <g class="mascot-mouth-open">
+                  <ellipse cx="110" cy="122" rx="9" ry="11" fill="#7A2F49"/>
+                  <ellipse cx="110" cy="126" rx="5.5" ry="5" fill="#FF9DAF"/>
+                </g>
+                <g class="mascot-camera">
+                  <rect x="86" y="140" width="48" height="34" rx="9" fill="#FFF6EC" stroke="#35283A" stroke-width="4"/>
+                  <circle cx="110" cy="157" r="9.5" fill="#8ED3FF" stroke="#35283A" stroke-width="4"/>
+                  <circle cx="110" cy="157" r="3.4" fill="#FFF6EC"/>
+                  <rect x="120" y="146" width="7" height="4" rx="2" fill="#35283A"/>
+                </g>
+                <path class="mascot-star" d="M176 60c1.6 8 4.4 10.8 12.4 12.4-8 1.6-10.8 4.4-12.4 12.4-1.6-8-4.4-10.8-12.4-12.4 8-1.6 10.8-4.4 12.4-12.4Z"/>
+              </g>
+            </svg>
+            <div class="speech" id="home-speech">Halo! Aku Kiko. Siap foto bareng?</div>
+          </div>
+
+          <div class="home-actions">
+            <button class="btn btn-primary btn-xl" id="start-btn">
+              <svg class="icon" aria-hidden="true"><use href="#i-camera"/></svg>
+              Mulai foto
+            </button>
+            <button class="btn btn-soft" data-nav="gallery">
+              <svg class="icon" aria-hidden="true"><use href="#i-grid"/></svg>
+              Lihat galeri
+            </button>
+          </div>
+
+          <ul class="home-facts">
+            <li><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>Hasil 300 DPI</li>
+            <li><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>12 border, 10 filter</li>
+            <li><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>Multi-cetak 4R &amp; A4</li>
+            <li><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>PNG, JPG &amp; PDF</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- ===================== PENGATURAN ===================== -->
+      <section class="screen" id="screen-setup" data-screen="setup" hidden>
+        <div class="screen-head">
+          <button class="icon-btn" data-nav="home" aria-label="Kembali">
+            <svg class="icon" aria-hidden="true"><use href="#i-arrow-left"/></svg>
+          </button>
+          <div class="screen-head-text">
+            <p class="eyebrow">Langkah 1 dari 2</p>
+            <h2>Atur hasil cetakmu</h2>
+          </div>
+          <span class="camera-pill" id="camera-pill" data-state="loading">
+            <span class="dot"></span><span id="camera-pill-text">Menyiapkan kamera…</span>
+          </span>
+        </div>
+
+        <div class="setup-grid">
+          <section class="card card-wide">
+            <h3><span class="num">1</span> Ukuran kertas</h3>
+            <div class="paper-options" id="paper-options" role="radiogroup" aria-label="Ukuran kertas foto"></div>
+            <p class="hint" id="paper-hint">Semua ukuran dirender 300 DPI dengan margin aman 3 mm.</p>
+          </section>
+
+          <section class="card" id="multi-block" hidden>
+            <h3><span class="num">2</span> Multi-cetak</h3>
+            <div class="multi-options" id="multi-options" role="radiogroup" aria-label="Mode multi-cetak"></div>
+            <p class="hint" id="multi-hint">Pilih beberapa salinan agar satu lembar kertas bisa dipotong menjadi beberapa foto.</p>
+          </section>
+
+          <section class="card">
+            <h3><span class="num">3</span> Jumlah pose</h3>
+            <div class="pose-options" id="pose-options" role="radiogroup" aria-label="Jumlah pose"></div>
+            <p class="hint" id="pose-hint">Setiap pose punya hitung mundur 3 detik dan bisa diulang.</p>
+          </section>
+
+          <section class="card card-wide">
+            <div class="card-head">
+              <h3><span class="num">4</span> Pilih border</h3>
+              <span class="hint" id="border-count"></span>
+            </div>
+            <div class="border-carousel" id="border-carousel" role="radiogroup" aria-label="Border"></div>
+          </section>
+        </div>
+
+        <div class="setup-actions">
+          <div class="selection-summary" id="selection-summary" aria-live="polite"></div>
+          <button class="btn btn-primary btn-lg" id="to-camera">
+            Lanjut ke kamera
+            <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg>
+          </button>
+        </div>
+      </section>
+
+      <!-- ===================== KAMERA ===================== -->
+      <section class="screen" id="screen-camera" data-screen="camera" hidden>
+        <div class="screen-head">
+          <button class="icon-btn" id="camera-back" aria-label="Kembali ke pengaturan">
+            <svg class="icon" aria-hidden="true"><use href="#i-arrow-left"/></svg>
+          </button>
+          <div class="screen-head-text">
+            <p class="eyebrow">Langkah 2 dari 2</p>
+            <h2 id="camera-title">Ambil pose 1 dari 4</h2>
+          </div>
+          <span class="pose-chip" id="pose-chip">0 / 4</span>
+        </div>
+
+        <div class="camera-layout">
+          <div class="camera-stage" role="group" aria-label="Photobooth dan tombol kamera">
+            <div class="booth">
+              <div class="booth-top">
+                <span class="booth-label">PHOTOBOOTH</span>
+                <div class="booth-lights" id="booth-lights" aria-hidden="true">
+                  <i></i><i></i><i></i><i></i><i></i>
+                </div>
+                <span class="booth-rec"><i></i> LIVE</span>
+              </div>
+              <div class="booth-window" id="booth-window">
+                <video id="camera-video" autoplay playsinline muted></video>
+                <div class="camera-placeholder" id="camera-placeholder">
+                  <svg class="icon icon-lg" aria-hidden="true"><use href="#i-camera"/></svg>
+                  <p>Menyalakan kamera…</p>
+                </div>
+                <div class="countdown" id="countdown" aria-live="assertive" hidden><span>3</span></div>
+                <div class="flash" id="flash" aria-hidden="true"></div>
+                <div class="mirror-badge" id="mirror-badge">kamera depan</div>
+              </div>
+              <div class="booth-bottom">
+                <span id="camera-name">kamera tidak terdeteksi</span>
+                <span class="booth-dots" aria-hidden="true">● ● ●</span>
+              </div>
+            </div>
+
+            <div class="camera-alert" id="camera-alert" hidden>
+              <div>
+                <strong id="camera-alert-title">Kamera tidak bisa dibuka</strong>
+                <p id="camera-alert-text"></p>
+              </div>
+              <div class="camera-alert-actions">
+                <button class="btn btn-soft btn-sm" id="camera-retry">Coba lagi</button>
+                <button class="btn btn-soft btn-sm" id="camera-upload">
+                  <svg class="icon" aria-hidden="true"><use href="#i-upload"/></svg> Unggah foto
+                </button>
+              </div>
+            </div>
+
+            <div class="camera-controls">
+              <button class="btn btn-soft btn-sm camera-side-btn" id="upload-btn">
+                <svg class="icon" aria-hidden="true"><use href="#i-upload"/></svg>
+                <span>Unggah</span>
+              </button>
+              <button class="shutter" id="shutter" aria-label="Ambil foto">
+                <span class="shutter-ring"><span class="shutter-core"></span></span>
+              </button>
+              <button class="btn btn-soft btn-sm camera-side-btn" id="switch-camera">
+                <svg class="icon" aria-hidden="true"><use href="#i-switch"/></svg>
+                <span>Ganti</span>
+              </button>
+            </div>
+            <input type="file" id="upload-input" class="visually-hidden" accept="image/*" multiple aria-label="Unggah foto dari perangkat">
+          </div>
+
+          <aside class="shot-panel">
+            <div class="card">
+              <div class="card-head">
+                <h3>Tembakan</h3>
+                <span class="hint" id="shot-progress">0 / 4</span>
+              </div>
+              <div class="shot-list" id="shot-list"></div>
+              <p class="hint" id="shot-hint">Tekan tombol rana besar atau spasi untuk memotret.</p>
+              <div class="shot-actions">
+                <button class="btn btn-ghost btn-sm" id="retake-all">
+                  <svg class="icon" aria-hidden="true"><use href="#i-refresh"/></svg> Ulang semua
+                </button>
+                <button class="btn btn-primary" id="to-result" disabled>
+                  Lihat hasil
+                  <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="tip-card">
+              <svg class="icon" aria-hidden="true"><use href="#i-sparkle"/></svg>
+              <p><strong>Tips pose:</strong> dekatkan wajah ke tengah bingkai, cari cahaya dari depan, dan jangan lupa senyum.</p>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ===================== HASIL ===================== -->
+      <section class="screen" id="screen-result" data-screen="result" hidden>
+        <div class="screen-head">
+          <button class="icon-btn" id="result-back" aria-label="Kembali ke kamera">
+            <svg class="icon" aria-hidden="true"><use href="#i-arrow-left"/></svg>
+          </button>
+          <div class="screen-head-text">
+            <p class="eyebrow">Siap dicetak</p>
+            <h2>Hasil fotomu</h2>
+          </div>
+          <span class="dpi-chip" id="dpi-chip">300 DPI</span>
+        </div>
+
+        <div class="result-layout">
+          <div class="result-stage">
+            <div class="slot-machine">
+              <div class="slot-mouth" aria-hidden="true"><span></span></div>
+              <div class="result-paper" id="result-paper">
+                <canvas id="preview-canvas" tabindex="0" aria-label="Pratinjau hasil foto" aria-describedby="overlay-help"></canvas>
+              </div>
+            </div>
+            <p class="result-meta" id="result-meta"></p>
+          </div>
+
+          <aside class="result-panel">
+            <p class="hint edit-note" id="edit-note" hidden></p>
+            <section class="card" id="filter-card">
+              <div class="card-head">
+                <h3>Filter</h3>
+                <span class="hint" id="filter-name">Normal</span>
+              </div>
+              <div class="filter-row" id="filter-row" role="radiogroup" aria-label="Filter foto"></div>
+              <label class="slider-row" for="intensity">
+                <span>Intensitas</span>
+                <output id="intensity-value">100%</output>
+                <input type="range" id="intensity" min="0" max="100" value="100" step="5">
+              </label>
+            </section>
+
+            <section class="card decorate-card" aria-labelledby="decorate-title">
+              <div class="card-head">
+                <h3 id="decorate-title">Hiasan</h3>
+                <span class="hint" id="overlay-count">Belum ada</span>
+              </div>
+              <form class="overlay-form" id="overlay-form">
+                <label class="visually-hidden" for="overlay-text">Teks hiasan</label>
+                <input class="text-input" id="overlay-text" type="text" maxlength="32"
+                  placeholder="Tulis ucapan…" autocomplete="off">
+                <button class="btn btn-soft btn-sm" id="add-text" type="submit">Tambah teks</button>
+              </form>
+              <div class="color-row" id="text-colors" role="group" aria-label="Warna teks"></div>
+              <div class="sticker-grid" id="sticker-grid" role="group" aria-label="Stiker"></div>
+              <p class="hint decorate-hint" id="decorate-hint">Tambahkan teks atau stiker, lalu geser langsung di pratinjau.</p>
+              <div class="overlay-list" id="overlay-list" aria-label="Daftar hiasan"></div>
+              <div class="overlay-tools" id="overlay-tools" hidden>
+                <p class="overlay-selected" id="overlay-selected">Hiasan terpilih</p>
+                <label class="slider-row" for="overlay-size">
+                  <span>Ukuran</span>
+                  <output id="overlay-size-value">12%</output>
+                  <input type="range" id="overlay-size" min="4" max="30" step="1" value="12">
+                </label>
+                <div class="overlay-actions">
+                  <button class="btn btn-soft btn-sm" id="rotate-left" type="button"
+                    aria-label="Putar hiasan ke kiri">↺ Kiri</button>
+                  <button class="btn btn-soft btn-sm" id="rotate-right" type="button"
+                    aria-label="Putar hiasan ke kanan">↻ Kanan</button>
+                  <button class="btn btn-soft btn-sm overlay-delete" id="delete-overlay" type="button">Hapus</button>
+                </div>
+              </div>
+              <p class="hint overlay-help" id="overlay-help">Seret hiasan di pratinjau untuk memindahkan.
+                Saat pratinjau fokus, gunakan tombol panah untuk menggeser dan Delete untuk menghapus.</p>
+              <div class="visually-hidden" id="overlay-status" aria-live="polite"></div>
+            </section>
+
+            <section class="card actions-card">
+              <button class="btn btn-primary btn-lg" id="save-btn">
+                <svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>
+                Simpan ke galeri
+              </button>
+              <div class="download-grid">
+                <button class="btn btn-soft" data-download="png">
+                  <svg class="icon" aria-hidden="true"><use href="#i-download"/></svg> PNG
+                </button>
+                <button class="btn btn-soft" data-download="jpg">
+                  <svg class="icon" aria-hidden="true"><use href="#i-download"/></svg> JPG
+                </button>
+                <button class="btn btn-soft" data-download="pdf">
+                  <svg class="icon" aria-hidden="true"><use href="#i-download"/></svg> PDF
+                </button>
+              </div>
+              <p class="hint" id="save-status">File 300 DPI sesuai ukuran kertas, margin aman 3 mm.</p>
+              <button class="btn btn-ghost btn-sm" id="retake-btn">
+                <svg class="icon" aria-hidden="true"><use href="#i-camera"/></svg> Foto ulang
+              </button>
+            </section>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ===================== GALERI ===================== -->
+      <section class="screen" id="screen-gallery" data-screen="gallery" hidden>
+        <div class="screen-head">
+          <button class="icon-btn" data-nav="home" aria-label="Kembali">
+            <svg class="icon" aria-hidden="true"><use href="#i-arrow-left"/></svg>
+          </button>
+          <div class="screen-head-text">
+            <p class="eyebrow">Koleksi di perangkat ini</p>
+            <h2>Galeri foto</h2>
+          </div>
+          <button class="icon-btn" id="gallery-refresh" aria-label="Muat ulang galeri">
+            <svg class="icon" aria-hidden="true"><use href="#i-refresh"/></svg>
+          </button>
+        </div>
+
+        <div class="retention-note">
+          <svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg>
+          <p>Foto terikat ke perangkat ini dan otomatis dihapus setelah 30 hari. Kamu bisa menghapusnya kapan saja.</p>
+        </div>
+
+        <div class="gallery-grid" id="gallery-grid" aria-live="polite"></div>
+        <div class="empty-state" id="gallery-empty" hidden>
+          <svg class="icon icon-xl" aria-hidden="true"><use href="#i-image"/></svg>
+          <h3>Belum ada foto tersimpan</h3>
+          <p>Hasil fotomu akan muncul di sini, lengkap dengan border dan filter yang dipakai.</p>
+          <button class="btn btn-primary" data-nav="home">Mulai foto</button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>Photobox Web · dibuat dengan kamera, kanvas, dan sedikit konfeti.</p>
+      <button class="link-btn" id="privacy-btn">Privasi &amp; penyimpanan</button>
+    </footer>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <div class="busy" id="busy" hidden>
+    <div class="busy-card">
+      <div class="spinner" aria-hidden="true"></div>
+      <p id="busy-text">Menyiapkan file…</p>
+    </div>
+  </div>
+
+  <dialog class="dialog" id="lightbox">
+    <div class="lightbox-inner">
+      <button class="icon-btn dialog-close" data-close aria-label="Tutup">
+        <svg class="icon" aria-hidden="true"><use href="#i-x"/></svg>
+      </button>
+      <img id="lightbox-img" alt="Foto tersimpan">
+      <div class="lightbox-meta">
+        <div>
+          <p class="eyebrow" id="lightbox-title"></p>
+          <p class="hint" id="lightbox-sub"></p>
+        </div>
+        <div class="lightbox-actions">
+          <button class="btn btn-soft btn-sm" id="lightbox-edit" hidden>
+            <svg class="icon" aria-hidden="true"><use href="#i-sparkle"/></svg> Edit ulang
+          </button>
+          <button class="btn btn-primary btn-sm" id="lightbox-download">
+            <svg class="icon" aria-hidden="true"><use href="#i-download"/></svg> Unduh
+          </button>
+          <button class="btn btn-danger btn-sm" id="lightbox-delete">
+            <svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg> Hapus
+          </button>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog class="dialog" id="privacy-dialog">
+    <div class="dialog-inner">
+      <button class="icon-btn dialog-close" data-close aria-label="Tutup">
+        <svg class="icon" aria-hidden="true"><use href="#i-x"/></svg>
+      </button>
+      <h2>Privasi &amp; penyimpanan</h2>
+      <ul class="privacy-list">
+        <li><strong>Kamera hanya aktif saat kamu izinkan.</strong> Pratinjau kamera diproses di browser, bukan dikirim ke server.</li>
+        <li><strong>Foto hanya diunggah saat kamu menekan “Simpan ke galeri”.</strong> Kalau hanya mengunduh, file dibuat di perangkatmu dan tidak disimpan di server.</li>
+        <li><strong>Galeri terikat ke perangkat ini.</strong> Kami memakai ID anonim di localStorage, bukan akun atau email.</li>
+        <li><strong>Retensi 30 hari.</strong> Foto tersimpan otomatis dihapus setelah 30 hari, atau bisa kamu hapus sendiri kapan saja.</li>
+        <li><strong>Tanpa pembayaran atau iklan.</strong> Data tidak dijual atau dibagikan.</li>
+      </ul>
+      <p class="hint">Akses kamera browser hanya berfungsi di <code>localhost</code> atau koneksi HTTPS.</p>
+      <button class="btn btn-primary" data-close>Tutup</button>
+    </div>
+  </dialog>
+
+  <script type="module" src="js/main.js?v=13"></script>
+</body>
+</html>
