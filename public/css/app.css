@@ -1685,8 +1685,7 @@ code {
 
 .gallery-sub { font-size: 0.74rem; color: var(--ink-soft); }
 
-/** Label mode multi-cetak pada kartu galeri dan lightbox. */
-.gallery-tag {
+/** Label mode multi-cetak pada kartu galeri dan lightbox. */.gallery-tag {
   align-self: flex-start;
   font-family: var(--font-display);
   font-weight: 800;
@@ -1733,6 +1732,19 @@ code {
 .empty-state h3 { font-size: 1.3rem; margin-top: 4px; }
 .empty-state p { max-width: 42ch; color: var(--ink-soft); font-size: 0.92rem; }
 .empty-state .btn { margin-top: 10px; }
+
+/** Indikator memuat galeri. */
+.gallery-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: clamp(30px, 6vw, 60px) 20px;
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+}
+
+.gallery-loading[hidden] { display: none; }
 
 /* ============================== DIALOG ============================== */
 

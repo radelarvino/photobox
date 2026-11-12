@@ -13,7 +13,8 @@ Photobooth di browser untuk mengambil 1–4 pose, memilih border dan filter, men
 - **5 ukuran kertas**: 3R, 4R, 5R, A4, dan Strip 2×6 inci.
 - **Multi-cetak** untuk mengisi satu lembar dengan beberapa salinan identik: 4R bisa berisi 2 strip 2×6, A4 bisa berisi 2 foto 4R atau 4 foto 3R dalam grid 2×2.
 - **12 stiker vektor** (hati, bintang, kilau, senyum, bunga, balon, mahkota, matahari, pelangi, tapak, kamera, ceri) dan **teks berwarna** yang bisa digeser, diubah ukuran, diputar, dan dihapus langsung di pratinjau. Hiasan ikut ter-render di pratinjau, galeri, dan semua ekspor.
-- **Galeri perangkat** untuk melihat ulang, mengunduh ulang, dan menghapus foto.
+- **Galeri perangkat** untuk melihat ulang, mengunduh ulang, dan menghapus foto, lengkap dengan label mode multi-cetak.
+- **Edit ulang dari galeri**: foto tersimpan menyimpan hiasan sebagai data lapisan, jadi teks dan stiker bisa digeser atau diubah lagi, lalu disimpan sebagai foto baru. Berkas tersimpan tetap versi bersih; pratinjau dan unduhan tetap menampilkan hiasan.
 - **Unduhan PNG, JPG, dan PDF** dengan metadata 300 DPI; ukuran halaman PDF sama persis dengan kertas.
 - **Unggah foto** dari galeri perangkat, termasuk seret-lepas ke area kamera, saat kamera tidak tersedia.
 - **Sesi anonim** lewat UUID di `localStorage`; tidak perlu akun atau email.
@@ -39,6 +40,13 @@ Login/akun lintas perangkat belum termasuk. Struktur data dan UI sudah disiapkan
 4. Hiasan otomatis ikut tersimpan ke galeri dan ter-render pada unduhan PNG, JPG, dan PDF.
 
 Maksimal 12 hiasan per foto. Untuk pengguna keyboard, fokuskan pratinjau lalu gunakan tombol panah (Shift untuk langkah lebih besar) dan Delete.
+
+### Edit ulang dari galeri
+
+1. Buka **Galeri**, ketuk foto mana pun, lalu pilih **Edit ulang** pada lightbox. Tombol ini hanya tampil untuk foto yang punya data hiasan.
+2. Layar hasil terbuka dalam **mode edit**: filter dan border terbawa dari foto tersimpan (kartu filter disembunyikan), dan hiasan yang tersimpan menjadi lapisan aktif yang bisa digeser, diubah ukuran, diputar, atau dihapus.
+3. Tekan **Simpan ke galeri** untuk menyimpan hasilnya sebagai **foto baru** — foto aslinya tidak berubah.
+4. Label mode multi-cetak (misal "2 strip 2×6") tampil pada kartu galeri dan lightbox, dan tetap terbawa pada hasil edit.
 
 ## Teknologi
 
@@ -259,11 +267,17 @@ photobox/
 npm test
 ```
 
-Tes mencakup katalog, validasi sesi, seluruh aturan validasi unggahan, batas 20 MB, simpan/daftar/unduh, isolasi antarsesi, hapus foto, mode dan geometri multi-cetak, header keamanan, request ID, cache API/aset, redirect HTTPS + HSTS, validasi environment, serta build ber-hash dan manifest. Total **33 tes** berjalan dengan `node --test`.
+Tes mencakup katalog, validasi sesi, seluruh aturan validasi unggahan, batas 20 MB, simpan/daftar/unduh, isolasi antarsesi, hapus foto, mode multi-cetak dan validasi lapisan hiasan (mode `mode` + `lapisan` JSON), header keamanan, request ID, cache API/aset, redirect HTTPS + HSTS, validasi environment, serta build ber-hash dan manifest. Total **35 tes** berjalan dengan `node --test`.
 
 QA browser F10 memverifikasi tambah/geser/ubah ukuran/putar/hapus hiasan, batas 12 hiasan, pintasan keyboard, serta hiasan yang ikut ter-render pada PNG 1200 × 1800 px (300 DPI), JPG, PDF, dan gambar galeri. Pemindaian axe-core 4.10.2 pada layar hasil desktop dan mobile tidak menemukan pelanggaran WCAG 2.0/2.1 A/AA, dan tidak ada error konsol.
 
 QA browser F11 memverifikasi 4R dua strip, A4 dua 4R, dan A4 empat 3R: semua salinan identik termasuk hiasan, pemilihan hiasan sadar petak, margin putih A4, serta ekspor PNG/JPG 300 DPI dan PDF sesuai ukuran kertas (4R 288 × 432 pt, A4 595,28 × 841,89 pt). Galeri menyimpan berkas lembar penuh; axe-core bersih di desktop dan mobile 360 px tanpa error konsol.
+
+QA browser edit-ulang (headless, kamera palsu) memverifikasi alur lengkap dua kali: ambil 4 pose → tambah teks dan stiker → simpan (API menyimpan `mode` dan 2 lapisan) → galeri → lightbox menampilkan pratinjau berhiasan → **Edit ulang** membuka layar hasil dengan kartu filter disembunyikan, catatan mode edit tampil, dan lapisan dimuat sebagai chip → geser teks dengan tombol panah → simpan sebagai **entri baru** (id berbeda, lapisan `x` bertambah) → unduh ulang dari galeri menghasilkan PNG berhiasan `photobox-4r-*.png` (119,6 KB) — semua tanpa error konsol.
+
+QA browser multi-cetak 2-strip memverifikasi: kartu galeri menampilkan label **"2 strip 2×6"**, lightbox menyebut mode pada teks keterangan, pratinjau berhiasan dirender ulang dari data lapisan, edit-ulang memuat chip teks dan stiker, serta hasil edit tersimpan sebagai entri baru ber-mode `2-strip` dengan lapisan yang bergeser — tanpa error konsol.
+
+QA pass UX memverifikasi: tautan langsung `/#gallery` membuka galeri saat halaman dimuat, galeri menampilkan indikator "Memuat galeri…" dan tombol **Coba lagi** saat server gagal, tombol **Lihat di galeri** muncul setelah simpan berhasil, dan peringatan konfirmasi muncul saat menutup tab dengan foto yang belum disimpan.
 
 QA pengerasan produksi:
 

@@ -80,6 +80,15 @@ Stiker dan teks disimpan di state klien sebagai koordinat ternormalisasi 0–1 t
 
 ### 4.7 Multi-cetak dengan tiling klien
 
+### 4.8 Berkas bersih + lapisan terpisah untuk edit-ulang
+
+Foto yang disimpan ke galeri adalah **versi bersih** (tanpa hiasan ter-rasterisasi), sementara hiasan disimpan sebagai JSON `lapisan` di database. Dengan begitu:
+
+- thumbnail tetap menampilkan hiasan (dirender di klien saat simpan);
+- pratinjau lightbox dan unduhan galeri dirender ulang dari berkas bersih + lapisan, sehingga selalu menampilkan hiasan yang konsisten;
+- **Edit ulang** membuka layar hasil dengan lapisan aktif yang bisa digeser/diubah, lalu menyimpan hasilnya sebagai foto baru tanpa mengubah foto asal;
+- di mode multi-cetak, lapisan digambar ulang pada setiap petak sesuai geometri `computeTiles`, sehingga hasil edit identik dengan lembar aslinya.
+
 Lembar keluaran tetap mengikuti kertas yang dipilih agar validasi server dan metadata DPI tidak berubah. Desain kecil (Strip, 3R, atau 4R) dirender sekali pada resolusi 300 DPI, lalu disalin ke petak yang dihitung `computeTiles()` dan dipusatkan pada lembar keluaran dengan latar putih. Koordinat hiasan tetap ternormalisasi terhadap desain, sehingga satu hiasan otomatis muncul identik di semua salinan; klik dan geser dipetakan ke petak yang disentuh, sedangkan kotak seleksi hanya digambar pada petak aktif. Tidak ada kolom database baru karena `paper_size_id`, `lebar_px`, `tinggi_px`, dan `dpi` tetap menggambarkan lembar fisik.
 
 ## 5. Penyimpangan dan Batasan yang Disengaja
@@ -102,7 +111,9 @@ Tabel utama:
 - `borders`: `id`, `nama`, `kategori`, `file_gambar`, `aktif`, `style`, `params`, `urutan`
 - `filters`: `id`, `nama`, `params`, `aktif`, `urutan`
 - `paper_sizes`: `id`, `nama`, `lebar_mm`, `tinggi_mm`, `dpi`, `layout`, `poses_min`, `poses_max`
-- `photos`: `id`, `session_id`, `border_id`, `filter_id`, `paper_size_id`, `file_path`, `thumb_path`, `lebar_px`, `tinggi_px`, `dpi`, `jumlah_pose`, `intensitas`, `created_at`, `expires_at`
+- `photos`: `id`, `session_id`, `border_id`, `filter_id`, `paper_size_id`, `file_path`, `thumb_path`, `lebar_px`, `tinggi_px`, `dpi`, `jumlah_pose`, `intensitas`, `mode`, `lapisan`, `created_at`, `expires_at`
+
+Kolom `mode` (teks, default `'single'`) menyimpan mode salinan foto; kolom `lapisan` (teks JSON, bisa kosong) menyimpan hiasan sebagai data lapisan terpisah dari berkas foto sehingga foto bisa diedit ulang. Keduanya ditambahkan lewat migrasi `ensureColumn` yang aman untuk database lama.
 
 Relasi `photos.session_id` memakai `ON DELETE CASCADE`; `photos` juga memiliki indeks untuk sesi dan waktu kedaluwarsa.
 
@@ -119,7 +130,9 @@ Relasi `photos.session_id` memakai `ON DELETE CASCADE`; `photos` juga memiliki i
 - dimensi yang tidak sesuai kertas (`422 INVALID_DIMENSIONS`);
 - dimensi berkas yang tidak cocok dengan metadata (`422 DIMENSION_MISMATCH`);
 - jumlah pose di luar rentang (`422 INVALID_POSE_COUNT`);
-- intensitas di luar 0–1 (`422 INVALID_INTENSITY`).
+- intensitas di luar 0–1 (`422 INVALID_INTENSITY`);
+- `mode` di luar daftar `single|2-strip|2-4r|4-3r` (`422 INVALID_MODE`);
+- `lapisan` yang bukan JSON, lebih dari 12 item, memakai ID stiker tak dikenal, atau berisi koordinat/ukuran/rotasi/teks di luar batas (`422 INVALID_LAYER`).
 
 Berkas yang sudah ditulis tetapi gagal validasi dihapus kembali.
 
@@ -138,6 +151,7 @@ Mencakup:
 - seluruh aturan validasi unggahan;
 - batas 20 MB;
 - simpan, daftar, unduh, isolasi antarsesi, dan hapus;
+- simpan `mode` dan `lapisan` hiasan, serta penolakan mode tak dikenal, JSON lapisan salah, lebih dari 12 lapisan, dan ID stiker tak dikenal dengan 422;
 - mode multi-cetak (daftar mode, fallback, geometri 4R dua strip, A4 dua 4R, A4 empat 3R, pembulatan skala pratinjau, dan penolakan susunan yang tidak muat);
 - header keamanan, request ID, cache API/aset, 404 JSON ber-requestId, redirect 308 ke HTTPS, dan HSTS di belakang proxy;
 - validasi environment (`PORT`, `PUBLIC_ORIGIN`, `HSTS_MAX_AGE`, `LOG_REQUESTS`, `TRUST_PROXY`, boolean);
@@ -166,7 +180,10 @@ Pengujian manual yang sudah dilakukan:
 - QA visual headless 360 × 800 dan 1366 × 900 dengan kamera palsu: tanpa luapan horizontal, Strip 2×6 menghasilkan 600 × 1800 px, A4 menghasilkan 2480 × 3508 px, bilah aksi pengaturan tidak lagi menutupi teks;
 - pemindaian axe-core 4.10 pada beranda, pengaturan, dialog privasi, kamera, hasil, dan galeri: 0 pelanggaran WCAG 2.0/2.1 A/AA;
 - Lighthouse 12 (emulasi seluler): performa 98, aksesibilitas 100, best practices 100, SEO 100; LCP 2,3 dtk, TBT 30 ms, CLS 0,005;
-- `prefers-reduced-motion` mematikan animasi/transisi, tombol spasi memicu hitung mundur, fokus dialog kembali ke tombol pemicu setelah Escape, dan tidak ada error konsol.
+- `prefers-reduced-motion` mematikan animasi/transisi, tombol spasi memicu hitung mundur, fokus dialog kembali ke tombol pemicu setelah Escape, dan tidak ada error konsol;
+- edit-ulang: ambil 4 pose → teks + stiker → simpan (API menyimpan `mode` dan 2 lapisan) → galeri → lightbox pratinjau berhiasan → Edit ulang (kartu filter tersembunyi, catatan mode edit tampil, lapisan dimuat) → geser teks → simpan sebagai entri baru (id berbeda, `x` lapisan bertambah) → unduh ulang PNG berhiasan; alur lulus dua kali tanpa error konsol;
+- multi-cetak 2-strip: label "2 strip 2×6" pada kartu galeri, teks lightbox menyebut mode, pratinjau berhiasan dirender ulang, edit-ulang menyimpan entri baru ber-mode `2-strip` dengan lapisan bergeser;
+- pass UX: tautan `/#gallery` membuka galeri saat boot, indikator "Memuat galeri…" dan CTA "Coba lagi" saat server gagal, tombol "Lihat di galeri" setelah simpan, dan peringatan `beforeunload` saat ada foto belum disimpan.
 
 ## 9. Pertanyaan Terbuka dan Langkah Berikutnya
 
@@ -174,8 +191,8 @@ Pengujian manual yang sudah dilakukan:
 2. **Object storage**: untuk produksi, pindahkan berkas dari disk lokal ke S3/R2 dan gunakan URL bertanda tangan.
 3. **Profil warna**: bila target cetak menuntut akurasi warna, tambahkan konversi ke profil printer dan uji cetak fisik.
 4. **Pembersihan retensi**: saat ini berbasis interval; untuk jaminan lebih ketat, tambahkan job scheduler terpisah.
-5. **Edit ulang hiasan dari galeri**: saat ini hiasan sudah dirasterisasi; bila perlu diedit ulang, simpan juga data lapisan terpisah di database.
-6. **Label multi-cetak di galeri**: metadata foto belum menyimpan mode salinan; tambahkan kolom bila galeri perlu menampilkan “2 strip” atau “4 foto 3R”.
+
+Butir "Edit ulang hiasan dari galeri" dan "Label multi-cetak di galeri" dari daftar lama sudah diselesaikan melalui kolom `mode`/`lapisan` dan alur edit-ulang (lihat bagian 4.8).
 
 ## 10. Pengerasan Produksi
 

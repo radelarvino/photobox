@@ -11,7 +11,7 @@
   <link rel="preload" href="assets/fonts/nunito-700-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/baloo-2-800-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="css/fonts.css?v=2">
-  <link rel="stylesheet" href="css/app.css?v=13">
+  <link rel="stylesheet" href="css/app.css?v=14">
 </head>
 <body>
   <svg class="sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
@@ -399,6 +399,9 @@
                 </button>
               </div>
               <p class="hint" id="save-status">File 300 DPI sesuai ukuran kertas, margin aman 3 mm.</p>
+              <button class="btn btn-ghost btn-sm" id="to-gallery-btn" hidden>
+                <svg class="icon" aria-hidden="true"><use href="#i-grid"/></svg> Lihat di galeri
+              </button>
               <button class="btn btn-ghost btn-sm" id="retake-btn">
                 <svg class="icon" aria-hidden="true"><use href="#i-camera"/></svg> Foto ulang
               </button>
@@ -428,11 +431,15 @@
         </div>
 
         <div class="gallery-grid" id="gallery-grid" aria-live="polite"></div>
+        <div class="gallery-loading" id="gallery-loading" hidden>
+          <span class="spinner" aria-hidden="true"></span>
+          <p>Memuat galeri…</p>
+        </div>
         <div class="empty-state" id="gallery-empty" hidden>
           <svg class="icon icon-xl" aria-hidden="true"><use href="#i-image"/></svg>
           <h3>Belum ada foto tersimpan</h3>
           <p>Hasil fotomu akan muncul di sini, lengkap dengan border dan filter yang dipakai.</p>
-          <button class="btn btn-primary" data-nav="home">Mulai foto</button>
+          <button class="btn btn-primary" data-nav="home" id="gallery-empty-cta">Mulai foto</button>
         </div>
       </section>
     </main>
@@ -496,6 +503,6 @@
     </div>
   </dialog>
 
-  <script type="module" src="js/main.js?v=13"></script>
+  <script type="module" src="js/main.js?v=14"></script>
 </body>
 </html>

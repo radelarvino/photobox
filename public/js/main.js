@@ -157,6 +157,7 @@ const el = {
   dpiChip: $('#dpi-chip'),
   saveBtn: $('#save-btn'),
   saveStatus: $('#save-status'),
+  toGalleryBtn: $('#to-gallery-btn'),
 
   overlayForm: $('#overlay-form'),
   overlayText: $('#overlay-text'),
@@ -177,6 +178,8 @@ const el = {
 
   galleryGrid: $('#gallery-grid'),
   galleryEmpty: $('#gallery-empty'),
+  galleryEmptyCta: $('#gallery-empty-cta'),
+  galleryLoading: $('#gallery-loading'),
   lightbox: $('#lightbox'),
   lightboxImg: $('#lightbox-img'),
   lightboxTitle: $('#lightbox-title'),
@@ -1331,6 +1334,8 @@ function endOverlayDrag(event) {
 
 function updateSaveStatus() {
   const button = el.saveBtn;
+  // CTA "Lihat di galeri" hanya muncul setelah foto berhasil disimpan.
+  el.toGalleryBtn.hidden = !state.savedPhoto;
   if (state.savedPhoto) {
     button.disabled = true;
     button.replaceChildren(icon('check'), document.createTextNode('Tersimpan di galeri'));
@@ -1478,12 +1483,16 @@ async function loadGallery() {
   for (const url of galleryUrls) URL.revokeObjectURL(url);
   galleryUrls = [];
   el.galleryGrid.replaceChildren();
+  el.galleryEmpty.hidden = true;
+  el.galleryLoading.hidden = false;
+  setGalleryCta('Mulai foto', null);
   el.galleryEmpty.querySelector('h3').textContent = 'Belum ada foto tersimpan';
   el.galleryEmpty.querySelector('p').textContent =
     'Hasil fotomu akan muncul di sini, lengkap dengan border dan filter yang dipakai.';
 
   try {
     const photos = await api.listPhotos();
+    el.galleryLoading.hidden = true;
     state.photos = photos;
     updateGalleryCount();
 
@@ -1543,11 +1552,27 @@ async function loadGallery() {
       el.galleryGrid.append(card);
     });
   } catch (error) {
+    el.galleryLoading.hidden = true;
     el.galleryEmpty.hidden = false;
     el.galleryEmpty.querySelector('h3').textContent = 'Galeri gagal dimuat';
     el.galleryEmpty.querySelector('p').textContent = error.message;
+    setGalleryCta('Coba lagi', () => loadGallery());
     toast(error.message, 'error');
   }
+}
+
+/**
+ * Mengatur tombol CTA pada keadaan kosong galeri: kembali ke beranda, atau
+ * mencoba memuat ulang saat galeri gagal dibuka.
+ */
+function setGalleryCta(text, onClick) {
+  const fresh = el.galleryEmptyCta.cloneNode(false);
+  fresh.type = 'button';
+  fresh.textContent = text;
+  // Listener data-nav hanya terpasang sekali saat boot, jadi klon diikat manual.
+  fresh.addEventListener('click', onClick ?? (() => { sound.click(); go('home'); }));
+  el.galleryEmptyCta.replaceWith(fresh);
+  el.galleryEmptyCta = fresh;
 }
 
 async function downloadSaved(photo) {
@@ -1853,6 +1878,20 @@ function bindEvents() {
   });
 
   el.saveBtn.addEventListener('click', saveToGallery);
+  el.toGalleryBtn.addEventListener('click', () => {
+    sound.click();
+    go('gallery');
+  });
+
+  // Cegah kerja hilang: foto yang belum disimpan akan lenyap saat tab ditutup.
+  window.addEventListener('beforeunload', (event) => {
+    const belumSimpan = !state.editBase && filledCount() > 0 && !state.savedPhoto;
+    const editBelumSimpan = state.editBase && state.overlays.length > 0 && !state.savedPhoto;
+    if (belumSimpan || editBelumSimpan) {
+      event.preventDefault();
+      event.returnValue = '';
+    }
+  });
   for (const button of $$('[data-download]')) {
     button.addEventListener('click', () => downloadPhoto(button.dataset.download));
   }
@@ -1931,6 +1970,8 @@ async function boot() {
   renderTextColors();
   renderOverlayList();
   syncOverlayControls();
+  // Hormati hash awal (mis. /#gallery) sebelum digantikan #home.
+  const hashAwal = location.hash.replace(/^#/, '');
   history.replaceState({ screen: 'home' }, '', '#home');
 
   el.speech.textContent = [
@@ -1961,6 +2002,9 @@ async function boot() {
   updateDecorateHint();
   updateSummary();
   refreshGalleryCount();
+
+  // Buka layar sesuai hash URL bila valid (misal tautan langsung ke galeri).
+  if (SCREENS.includes(hashAwal) && hashAwal !== 'home') go(hashAwal, { push: false });
 
   if (document.fonts?.ready) {
     document.fonts.ready.then(() => {
