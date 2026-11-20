@@ -1800,6 +1800,23 @@ code {
 
 .lightbox-inner { display: flex; flex-direction: column; gap: 14px; }
 
+/** Panggung lightbox dengan tombol navigasi di kiri-kanan gambar. */
+.lightbox-stage {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.lightbox-stage img { min-width: 0; flex: 1; }
+
+.lightbox-nav {
+  flex: 0 0 auto;
+  background: var(--paper, #fff);
+}
+
+.lightbox-nav[hidden] { display: none; }
+
 .lightbox-inner img {
   width: 100%;
   max-height: 60vh;

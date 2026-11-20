@@ -70,8 +70,8 @@ export function createApp(config = loadConfig()) {
 
   app.use(express.json({ limit: '64kb' }));
 
-  const readLimit = rateLimit({ windowMs: 60_000, max: 240 });
-  const writeLimit = rateLimit({ windowMs: 60 * 60_000, max: 80 });
+  const readLimit = rateLimit({ windowMs: 60_000, max: config.rateLimitReadMax });
+  const writeLimit = rateLimit({ windowMs: 60 * 60_000, max: config.rateLimitWriteMax });
 
   app.get('/api/health', (_req, res) => {
     res.json({

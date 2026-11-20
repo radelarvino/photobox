@@ -101,6 +101,8 @@ let lightboxPhoto = null;
 let lightboxUrl = null;
 let lightboxBlob = null;
 let lightboxDecorated = null;
+// Penanda urutan: pembukaan lightbox terbaru menang atas permintaan yang lebih lama.
+let lightboxSeq = 0;
 
 const el = {
   screens: $$('.screen'),
@@ -182,6 +184,8 @@ const el = {
   galleryLoading: $('#gallery-loading'),
   lightbox: $('#lightbox'),
   lightboxImg: $('#lightbox-img'),
+  lightboxPrev: $('#lightbox-prev'),
+  lightboxNext: $('#lightbox-next'),
   lightboxTitle: $('#lightbox-title'),
   lightboxSub: $('#lightbox-sub'),
   lightboxEdit: $('#lightbox-edit'),
@@ -1619,6 +1623,7 @@ async function deleteSaved(photo) {
 }
 
 async function openLightbox(photo) {
+  const seq = ++lightboxSeq;
   lightboxPhoto = photo;
   lightboxBlob = null;
   lightboxDecorated = null;
@@ -1638,17 +1643,24 @@ async function openLightbox(photo) {
   // Hiasan hanya bisa diedit ulang bila data lapisannya tersimpan.
   el.lightboxEdit.hidden = !photo.lapisan?.length;
   el.lightboxEdit.setAttribute('aria-label', `Edit hiasan ${el.lightboxTitle.textContent}`);
-  el.lightbox.showModal();
+  updateLightboxNav();
+  // showModal() gagal bila dialog sudah terbuka (saat berpindah foto).
+  if (!el.lightbox.open) el.lightbox.showModal();
 
   try {
-    lightboxBlob = await api.fetchPhotoBlob(photo);
-    lightboxUrl = URL.createObjectURL(lightboxBlob);
+    const blob = await api.fetchPhotoBlob(photo);
+    if (seq !== lightboxSeq) return;
+    lightboxBlob = blob;
+    lightboxUrl = URL.createObjectURL(blob);
     el.lightboxImg.src = lightboxUrl;
 
     // Berkas tersimpan versi bersih; tampilkan pratinjau berhiasan dari data lapisan.
     if (photo.lapisan?.length) {
-      lightboxDecorated = await savedCanvasFor(photo);
-      const decoratedBlob = await canvasToBlob(lightboxDecorated, 'image/png');
+      const decorated = await savedCanvasFor(photo);
+      if (seq !== lightboxSeq) return;
+      const decoratedBlob = await canvasToBlob(decorated, 'image/png');
+      if (seq !== lightboxSeq) return;
+      lightboxDecorated = decorated;
       const decoratedUrl = URL.createObjectURL(decoratedBlob);
       el.lightboxImg.src = decoratedUrl;
       el.lightboxImg.dataset.decorated = '1';
@@ -1657,8 +1669,27 @@ async function openLightbox(photo) {
       lightboxBlob = decoratedBlob;
     }
   } catch (error) {
-    toast(error.message, 'error');
+    if (seq === lightboxSeq) toast(error.message, 'error');
   }
+}
+
+/** Menyembunyikan navigasi lightbox bila galeri hanya berisi satu foto. */
+function updateLightboxNav() {
+  const banyak = state.photos.length > 1;
+  el.lightboxPrev.hidden = !banyak;
+  el.lightboxNext.hidden = !banyak;
+  el.lightboxPrev.setAttribute('aria-label', `Foto sebelumnya dari ${el.lightboxTitle.textContent}`);
+  el.lightboxNext.setAttribute('aria-label', `Foto berikutnya dari ${el.lightboxTitle.textContent}`);
+}
+
+/** Pindah ke foto galeri berikutnya/sebelumnya dengan urutan melingkar. */
+function stepLightbox(delta) {
+  if (!lightboxPhoto || state.photos.length < 2) return;
+  const index = state.photos.findIndex((item) => item.id === lightboxPhoto.id);
+  if (index < 0) return;
+  const next = (index + delta + state.photos.length) % state.photos.length;
+  sound.click();
+  openLightbox(state.photos[next]);
 }
 
 /* ============================== pengikatan ============================== */
@@ -1944,6 +1975,9 @@ function bindEvents() {
     if (lightboxPhoto) deleteSaved(lightboxPhoto);
   });
 
+  el.lightboxPrev.addEventListener('click', () => stepLightbox(-1));
+  el.lightboxNext.addEventListener('click', () => stepLightbox(1));
+
   document.addEventListener('keydown', (event) => {
     const typing = ['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'A'].includes(event.target.tagName)
       || event.target.isContentEditable;
@@ -1951,6 +1985,18 @@ function bindEvents() {
     if (event.code === 'Space' && state.screen === 'camera' && !typing && !dialogOpen) {
       event.preventDefault();
       takePhoto();
+      return;
+    }
+    // Navigasi lightbox dengan tombol panah saat dialog terbuka.
+    if (el.lightbox.open && !['INPUT', 'TEXTAREA', 'SELECT'].includes(event.target.tagName)
+      && !event.target.isContentEditable) {
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        stepLightbox(-1);
+      } else if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        stepLightbox(1);
+      }
     }
   });
 

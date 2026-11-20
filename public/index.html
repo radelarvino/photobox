@@ -11,7 +11,7 @@
   <link rel="preload" href="assets/fonts/nunito-700-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/baloo-2-800-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="css/fonts.css?v=2">
-  <link rel="stylesheet" href="css/app.css?v=14">
+  <link rel="stylesheet" href="css/app.css?v=15">
 </head>
 <body>
   <svg class="sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
@@ -464,7 +464,15 @@
       <button class="icon-btn dialog-close" data-close aria-label="Tutup">
         <svg class="icon" aria-hidden="true"><use href="#i-x"/></svg>
       </button>
-      <img id="lightbox-img" alt="Foto tersimpan">
+      <div class="lightbox-stage">
+        <button class="icon-btn lightbox-nav" id="lightbox-prev" aria-label="Foto sebelumnya">
+          <svg class="icon" aria-hidden="true"><use href="#i-arrow-left"/></svg>
+        </button>
+        <img id="lightbox-img" alt="Foto tersimpan">
+        <button class="icon-btn lightbox-nav" id="lightbox-next" aria-label="Foto berikutnya">
+          <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg>
+        </button>
+      </div>
       <div class="lightbox-meta">
         <div>
           <p class="eyebrow" id="lightbox-title"></p>
@@ -503,6 +511,6 @@
     </div>
   </dialog>
 
-  <script type="module" src="js/main.js?v=14"></script>
+  <script type="module" src="js/main.js?v=15"></script>
 </body>
 </html>

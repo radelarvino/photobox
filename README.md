@@ -135,6 +135,8 @@ Tombol **Unggah foto** tetap bisa dipakai tanpa kamera.
 | `HSTS` | `true` di produksi | Kirim `Strict-Transport-Security` pada permintaan HTTPS |
 | `HSTS_MAX_AGE` | `31536000` | Masa berlaku HSTS dalam detik |
 | `LOG_REQUESTS` | `errors` (dev), `auto` (prod) | `off`, `errors`, `auto`, atau `all` |
+| `RATE_LIMIT_READ_MAX` | `240` | Batas permintaan baca API per menit per IP |
+| `RATE_LIMIT_WRITE_MAX` | `80` | Batas permintaan tulis API per jam per IP |
 
 Nilai yang tidak valid (misalnya `PORT=abc`, `PUBLIC_ORIGIN` non-HTTPS, atau `LOG_REQUESTS` tak dikenal) membuat server gagal saat startup, bukan saat melayani pengguna.
 

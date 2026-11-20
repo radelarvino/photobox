@@ -63,6 +63,16 @@ export function loadConfig(env = process.env) {
     }
   }
 
+  // Batas laju API yang dapat disesuaikan (mis. untuk lingkungan uji beban).
+  const rateReadText = String(env.RATE_LIMIT_READ_MAX ?? '240').trim();
+  const rateWriteText = String(env.RATE_LIMIT_WRITE_MAX ?? '80').trim();
+  for (const [label, text] of [['RATE_LIMIT_READ_MAX', rateReadText], ['RATE_LIMIT_WRITE_MAX', rateWriteText]]) {
+    if (!/^\d+$/.test(text)) throw new Error(`${label} harus bilangan bulat ≥ 1.`);
+    if (!Number.isSafeInteger(Number(text)) || Number(text) < 1) {
+      throw new Error(`${label} harus bilangan bulat ≥ 1.`);
+    }
+  }
+
   return {
     nodeEnv,
     production,
@@ -74,5 +84,7 @@ export function loadConfig(env = process.env) {
     hstsMaxAge,
     logRequests,
     publicOrigin,
+    rateLimitReadMax: Number(rateReadText),
+    rateLimitWriteMax: Number(rateWriteText),
   };
 }

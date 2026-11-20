@@ -38,6 +38,16 @@ test('TRUST_PROXY menerima angka, boolean, dan subnet', () => {
   assert.equal(loadConfig({ TRUST_PROXY: 'loopback' }).trustProxy, 'loopback');
 });
 
+test('Batas laju API dapat dikonfigurasi dan divalidasi', () => {
+  assert.equal(loadConfig({}).rateLimitReadMax, 240);
+  assert.equal(loadConfig({}).rateLimitWriteMax, 80);
+  assert.equal(loadConfig({ RATE_LIMIT_READ_MAX: '500' }).rateLimitReadMax, 500);
+  assert.equal(loadConfig({ RATE_LIMIT_WRITE_MAX: '10' }).rateLimitWriteMax, 10);
+  assert.throws(() => loadConfig({ RATE_LIMIT_READ_MAX: '0' }), /RATE_LIMIT_READ_MAX/);
+  assert.throws(() => loadConfig({ RATE_LIMIT_WRITE_MAX: '-5' }), /RATE_LIMIT_WRITE_MAX/);
+  assert.throws(() => loadConfig({ RATE_LIMIT_WRITE_MAX: 'banyak' }), /RATE_LIMIT_WRITE_MAX/);
+});
+
 test('PORT tidak valid ditolak saat startup', () => {
   assert.throws(() => loadConfig({ PORT: '0' }), /PORT/);
   assert.throws(() => loadConfig({ PORT: '70000' }), /PORT/);
