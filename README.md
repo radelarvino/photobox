@@ -2,6 +2,8 @@
 
 Photobooth di browser untuk mengambil 1–4 pose, memilih border dan filter, menambahkan stiker/teks, lalu menyimpan atau mengunduh hasil siap cetak 300 DPI. Semua antarmuka dan pesan memakai bahasa Indonesia.
 
+> **Versi kiosk baru:** folder [`kiosk/`](kiosk/README.md) berisi photobooth mandiri tanpa server (semua foto diproses lokal di browser), 5 layout cetak, 8 bingkai vektor, GIF/QR/cetak, panel admin PIN, dan mode kiosk. Untuk deploy Vercel, set Root Directory = `kiosk`, Output Directory = `public`. Panduan konsep bingkai ada di [`kiosk/FRAMES.md`](kiosk/FRAMES.md).
+
 ![Photobox](public/assets/favicon.svg)
 
 ## Fitur

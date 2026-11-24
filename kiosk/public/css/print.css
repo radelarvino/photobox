@@ -1,0 +1,20 @@
+/* Cetak: ukuran fisik diatur lewat @page yang disuntikkan JS ke iframe. */
+@page { size: 101.6mm 152.4mm; margin: 0; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #fff;
+}
+
+body { display: grid; place-items: center; min-height: 100vh; }
+
+img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 100vh;
+  object-fit: contain;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}

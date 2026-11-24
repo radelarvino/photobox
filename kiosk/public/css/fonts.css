@@ -1,0 +1,16 @@
+/* Dua font saja: display serif kontras tinggi + body sans yang bersih. */
+@font-face {
+  font-family: 'Bodoni Moda';
+  src: url('../fonts/bodoni-moda-latin.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'DM Sans';
+  src: url('../fonts/dm-sans-latin.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+}
